@@ -164,8 +164,9 @@ io.on('connection', (socket) => {
     socket.emit('role', role);
 
     socket.on('keydown', (key) => {
-        let p = role === 'player1' ? gameState.player1 : (role === 'player2' ? gameState.player2 : null);
-        if (!p || p.dead || gameState.winner) return;
+        if (role === 'spectator' || gameState.winner) return;
+        const p = gameState[role];
+        if (!p || p.dead) return;
 
         switch(key) {
             case 'left':
@@ -192,8 +193,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('keyup', (key) => {
-        let p = role === 'player1' ? gameState.player1 : (role === 'player2' ? gameState.player2 : null);
+        if (role === 'spectator') return;
+        const p = gameState[role];
         if (!p) return;
+        
         if (key === 'left') p.keys.left = false;
         if (key === 'right') p.keys.right = false;
     });
@@ -208,6 +211,24 @@ io.on('connection', (socket) => {
         io.emit('update', gameState);
     });
 });
+
+function handleHit(attacker, defender) {
+    if (attacker.isHitting && rectangularCollision({ rectangle1: attacker, rectangle2: defender })) {
+        attacker.isHitting = false;
+        defender.health -= attacker.attackType === 'kick' ? 15 : 5;
+        defender.takeHit = true;
+        defender.isAttacking = false;
+        
+        setTimeout(() => { defender.takeHit = false; }, 150);
+        io.emit('playSound', { type: 'hit' });
+        
+        if (defender.health <= 0) { 
+            defender.health = 0; 
+            defender.dead = true; 
+            determineWinner(); 
+        }
+    }
+}
 
 setInterval(() => {
     let p1 = gameState.player1;
@@ -235,25 +256,8 @@ setInterval(() => {
         p2.update();
 
         // Collisions
-        if (p1.isHitting && rectangularCollision({ rectangle1: p1, rectangle2: p2 })) {
-            p1.isHitting = false;
-            p2.health -= p1.attackType === 'kick' ? 15 : 5;
-            p2.takeHit = true;
-            p2.isAttacking = false;
-            setTimeout(() => { p2.takeHit = false; }, 150);
-            io.emit('playSound', { type: 'hit' });
-            if (p2.health <= 0) { p2.health = 0; p2.dead = true; determineWinner(); }
-        }
-
-        if (p2.isHitting && rectangularCollision({ rectangle1: p2, rectangle2: p1 })) {
-            p2.isHitting = false;
-            p1.health -= p2.attackType === 'kick' ? 15 : 5;
-            p1.takeHit = true;
-            p1.isAttacking = false;
-            setTimeout(() => { p1.takeHit = false; }, 150);
-            io.emit('playSound', { type: 'hit' });
-            if (p1.health <= 0) { p1.health = 0; p1.dead = true; determineWinner(); }
-        }
+        handleHit(p1, p2);
+        handleHit(p2, p1);
     }
 
     io.emit('update', gameState);

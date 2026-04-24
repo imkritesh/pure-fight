@@ -24,24 +24,24 @@
             </div>
         </div>
         
-        <div id="displayText" class="display-text" style="flex-direction: column;">
+        <div id="displayText" class="display-text">
             <span id="winnerText">Tie</span>
-            <button id="restartBtn" style="margin-top: 20px; padding: 10px 20px; font-size: 24px; cursor: pointer; background-color: #3b82f6; color: white; border: none; border-radius: 5px; display: none;">Restart Game</button>
+            <button id="restartBtn">Restart Game</button>
         </div>
 
         <!-- Canvas -->
         <canvas></canvas>
 
-        <div style="color: white; display: flex; justify-content: space-between; padding-top: 10px;">
-            <div>
-                <h3 style="margin: 0; color: #818cf8;">Player 1 (Blue)</h3>
-                <p style="margin: 5px 0;">Move: Arrow Keys</p>
-                <p style="margin: 5px 0;">Punch: K &nbsp;|&nbsp; Kick: L</p>
+        <div class="controls-container">
+            <div class="player-controls">
+                <h3 class="p1-title">Player 1</h3>
+                <p>Move: Arrow Keys</p>
+                <p>Punch: K &nbsp;|&nbsp; Kick: L</p>
             </div>
-            <div style="text-align: right;">
-                <h3 style="margin: 0; color: #ef4444;">Player 2 (Red)</h3>
-                <p style="margin: 5px 0;">Move: Arrow Keys</p>
-                <p style="margin: 5px 0;">Punch: K &nbsp;|&nbsp; Kick: L</p>
+            <div class="player-controls right-align">
+                <h3 class="p2-title">Player 2</h3>
+                <p>Move: Arrow Keys</p>
+                <p>Punch: K &nbsp;|&nbsp; Kick: L</p>
             </div>
         </div>
     </div>

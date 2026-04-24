@@ -81,4 +81,42 @@ body {
     font-size: 40px;
     font-weight: bold;
     text-shadow: 2px 2px 4px black;
+    flex-direction: column;
+}
+
+#restartBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 24px;
+    cursor: pointer;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    display: none;
+}
+
+.controls-container {
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.player-controls p {
+    margin: 5px 0;
+}
+
+.p1-title {
+    margin: 0;
+    color: #818cf8;
+}
+
+.p2-title {
+    margin: 0;
+    color: #ef4444;
+}
+
+.right-align {
+    text-align: right;
 }

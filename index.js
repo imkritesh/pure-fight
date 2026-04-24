@@ -8,15 +8,7 @@ canvas.height = 576;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-const player1KeyMap = {
-    'ArrowRight': 'right',
-    'ArrowLeft': 'left',
-    'ArrowUp': 'up',
-    'k': 'punch',
-    'l': 'kick'
-};
-
-const player2KeyMap = {
+const KEY_MAP = {
     'ArrowRight': 'right',
     'ArrowLeft': 'left',
     'ArrowUp': 'up',
@@ -32,38 +24,30 @@ function playSound(type) {
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     
-    if (type === 'punch') {
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    const time = audioCtx.currentTime;
+    
+    const soundConfigs = {
+        'punch': { type: 'sine', fStart: 150, fEnd: 40, dur: 0.1, vStart: 1, vEnd: 0.01, ramp: 'exp' },
+        'kick':  { type: 'triangle', fStart: 100, fEnd: 20, dur: 0.15, vStart: 1, vEnd: 0.01, ramp: 'exp' },
+        'hit':   { type: 'square', fStart: 300, fEnd: 50, dur: 0.1, vStart: 0.3, vEnd: 0.01, ramp: 'exp' },
+        'jump':  { type: 'sine', fStart: 300, fEnd: 500, dur: 0.2, vStart: 0.2, vEnd: 0.01, ramp: 'linear' }
+    };
+
+    const cfg = soundConfigs[type];
+    if (cfg) {
+        oscillator.type = cfg.type;
+        oscillator.frequency.setValueAtTime(cfg.fStart, time);
+        if (cfg.ramp === 'exp') {
+            oscillator.frequency.exponentialRampToValueAtTime(cfg.fEnd, time + cfg.dur);
+        } else {
+            oscillator.frequency.linearRampToValueAtTime(cfg.fEnd, time + cfg.dur);
+        }
+        
+        gainNode.gain.setValueAtTime(cfg.vStart, time);
+        gainNode.gain.exponentialRampToValueAtTime(cfg.vEnd, time + cfg.dur);
+        
         oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.1);
-    } else if (type === 'kick') {
-        oscillator.type = 'triangle';
-        oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.15);
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.15);
-    } else if (type === 'hit') {
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.1);
-    } else if (type === 'jump') {
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(500, audioCtx.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.2);
+        oscillator.stop(time + cfg.dur);
     }
 }
 
@@ -99,46 +83,30 @@ document.querySelector('#restartBtn').addEventListener('click', () => {
     socket.emit('restart');
 });
 
+function initSprite(framesMax) {
+    return { img: new Image(), framesMax };
+}
+
 const sprites = {
     player1: {
-        idle: { img: new Image(), framesMax: 8 },
-        run: { img: new Image(), framesMax: 8 },
-        jump: { img: new Image(), framesMax: 2 },
-        fall: { img: new Image(), framesMax: 2 },
-        attack1: { img: new Image(), framesMax: 6 },
-        attack2: { img: new Image(), framesMax: 6 },
-        death: { img: new Image(), framesMax: 6 },
-        takeHit: { img: new Image(), framesMax: 4 }
+        idle: initSprite(8), run: initSprite(8), jump: initSprite(2), fall: initSprite(2),
+        attack1: initSprite(6), attack2: initSprite(6), death: initSprite(6), takeHit: initSprite(4)
     },
     player2: {
-        idle: { img: new Image(), framesMax: 4 },
-        run: { img: new Image(), framesMax: 8 },
-        jump: { img: new Image(), framesMax: 2 },
-        fall: { img: new Image(), framesMax: 2 },
-        attack1: { img: new Image(), framesMax: 4 },
-        attack2: { img: new Image(), framesMax: 4 },
-        death: { img: new Image(), framesMax: 7 },
-        takeHit: { img: new Image(), framesMax: 3 }
+        idle: initSprite(4), run: initSprite(8), jump: initSprite(2), fall: initSprite(2),
+        attack1: initSprite(4), attack2: initSprite(4), death: initSprite(7), takeHit: initSprite(3)
     }
 };
 
-sprites.player1.idle.img.src = 'img/samuraiMack/Idle.png';
-sprites.player1.run.img.src = 'img/samuraiMack/Run.png';
-sprites.player1.jump.img.src = 'img/samuraiMack/Jump.png';
-sprites.player1.fall.img.src = 'img/samuraiMack/Fall.png';
-sprites.player1.attack1.img.src = 'img/samuraiMack/Attack1.png';
-sprites.player1.attack2.img.src = 'img/samuraiMack/Attack2.png';
-sprites.player1.death.img.src = 'img/samuraiMack/Death.png';
-sprites.player1.takeHit.img.src = 'img/samuraiMack/TakeHit.png';
+const loadSprites = (player, folder) => {
+    for (const action in sprites[player]) {
+        const filename = action.charAt(0).toUpperCase() + action.slice(1);
+        sprites[player][action].img.src = `img/${folder}/${filename}.png`;
+    }
+};
 
-sprites.player2.idle.img.src = 'img/kenji/Idle.png';
-sprites.player2.run.img.src = 'img/kenji/Run.png';
-sprites.player2.jump.img.src = 'img/kenji/Jump.png';
-sprites.player2.fall.img.src = 'img/kenji/Fall.png';
-sprites.player2.attack1.img.src = 'img/kenji/Attack1.png';
-sprites.player2.attack2.img.src = 'img/kenji/Attack2.png';
-sprites.player2.death.img.src = 'img/kenji/Death.png';
-sprites.player2.takeHit.img.src = 'img/kenji/TakeHit.png';
+loadSprites('player1', 'samuraiMack');
+loadSprites('player2', 'kenji');
 
 const animState = {
     player1: { frameCurrent: 0, framesElapsed: 0, framesHold: 5, currentSprite: sprites.player1.idle, action: 'idle' },
@@ -287,17 +255,7 @@ window.addEventListener('keydown', () => {
 window.addEventListener('keydown', (event) => {
     if (role === 'spectator') return;
 
-    let action = null;
-    let keyMap = {};
-
-    if (role === 'player1') {
-        keyMap = player1KeyMap;
-    } else if (role === 'player2') {
-        keyMap = player2KeyMap;
-    }
-    
-    action = keyMap[event.key];
-
+    const action = KEY_MAP[event.key];
     if (action) {
         socket.emit('keydown', action);
     }
@@ -306,17 +264,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => {
     if (role === 'spectator') return;
 
-    let action = null;
-    let keyMap = {};
-
-    if (role === 'player1') {
-        keyMap = player1KeyMap;
-    } else if (role === 'player2') {
-        keyMap = player2KeyMap;
-    }
-
-    action = keyMap[event.key];
-    
+    const action = KEY_MAP[event.key];
     if (action === 'left' || action === 'right') { // Only movement keys have keyup events
         socket.emit('keyup', action);
     }

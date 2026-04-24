@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PureStorage Wars</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- UI Container -->
+        <div class="ui-container">
+            <!-- Player 1 Health -->
+            <div class="health-bar-bg">
+                <div id="playerHealth" class="health-bar"></div>
+            </div>
+            
+            <!-- Timer -->
+            <div id="timer" class="timer">60</div>
+            
+            <!-- Player 2 Health -->
+            <div class="health-bar-bg" style="justify-content: flex-end;">
+                <div id="enemyHealth" class="health-bar"></div>
+            </div>
+        </div>
+        
+        <div id="displayText" class="display-text" style="flex-direction: column;">
+            <span id="winnerText">Tie</span>
+            <button id="restartBtn" style="margin-top: 20px; padding: 10px 20px; font-size: 24px; cursor: pointer; background-color: #3b82f6; color: white; border: none; border-radius: 5px; display: none;">Restart Game</button>
+        </div>
+
+        <!-- Canvas -->
+        <canvas></canvas>
+
+        <div style="color: white; display: flex; justify-content: space-between; padding-top: 10px;">
+            <div>
+                <h3 style="margin: 0; color: #818cf8;">Player 1 (Blue)</h3>
+                <p style="margin: 5px 0;">Move: Arrow Keys</p>
+                <p style="margin: 5px 0;">Punch: K &nbsp;|&nbsp; Kick: L</p>
+            </div>
+            <div style="text-align: right;">
+                <h3 style="margin: 0; color: #ef4444;">Player 2 (Red)</h3>
+                <p style="margin: 5px 0;">Move: Arrow Keys</p>
+                <p style="margin: 5px 0;">Punch: K &nbsp;|&nbsp; Kick: L</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

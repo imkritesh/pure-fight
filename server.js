@@ -31,6 +31,7 @@ class Player {
         this.attackType = null;
         this.health = 100;
         this.dead = false;
+        this.takeHit = false;
         this.direction = direction;
         this.keys = { left: false, right: false, up: false };
     }
@@ -70,7 +71,7 @@ class Player {
         const duration = this.attackFrames[type]?.duration || 200;
 
         setTimeout(() => {
-            if (this.dead) return;
+            if (this.dead || this.takeHit) return;
             this.isHitting = true;
             // The active hit frame is very short to avoid multiple registrations
             setTimeout(() => {
@@ -237,6 +238,9 @@ setInterval(() => {
         if (p1.isHitting && rectangularCollision({ rectangle1: p1, rectangle2: p2 })) {
             p1.isHitting = false;
             p2.health -= p1.attackType === 'kick' ? 15 : 5;
+            p2.takeHit = true;
+            p2.isAttacking = false;
+            setTimeout(() => { p2.takeHit = false; }, 150);
             io.emit('playSound', { type: 'hit' });
             if (p2.health <= 0) { p2.health = 0; p2.dead = true; determineWinner(); }
         }
@@ -244,6 +248,9 @@ setInterval(() => {
         if (p2.isHitting && rectangularCollision({ rectangle1: p2, rectangle2: p1 })) {
             p2.isHitting = false;
             p1.health -= p2.attackType === 'kick' ? 15 : 5;
+            p1.takeHit = true;
+            p1.isAttacking = false;
+            setTimeout(() => { p1.takeHit = false; }, 150);
             io.emit('playSound', { type: 'hit' });
             if (p1.health <= 0) { p1.health = 0; p1.dead = true; determineWinner(); }
         }

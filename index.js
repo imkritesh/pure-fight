@@ -107,7 +107,8 @@ const sprites = {
         fall: { img: new Image(), framesMax: 2 },
         attack1: { img: new Image(), framesMax: 6 },
         attack2: { img: new Image(), framesMax: 6 },
-        death: { img: new Image(), framesMax: 6 }
+        death: { img: new Image(), framesMax: 6 },
+        takeHit: { img: new Image(), framesMax: 4 }
     },
     player2: {
         idle: { img: new Image(), framesMax: 4 },
@@ -116,7 +117,8 @@ const sprites = {
         fall: { img: new Image(), framesMax: 2 },
         attack1: { img: new Image(), framesMax: 4 },
         attack2: { img: new Image(), framesMax: 4 },
-        death: { img: new Image(), framesMax: 7 }
+        death: { img: new Image(), framesMax: 7 },
+        takeHit: { img: new Image(), framesMax: 3 }
     }
 };
 
@@ -127,6 +129,7 @@ sprites.player1.fall.img.src = 'img/samuraiMack/Fall.png';
 sprites.player1.attack1.img.src = 'img/samuraiMack/Attack1.png';
 sprites.player1.attack2.img.src = 'img/samuraiMack/Attack2.png';
 sprites.player1.death.img.src = 'img/samuraiMack/Death.png';
+sprites.player1.takeHit.img.src = 'img/samuraiMack/TakeHit.png';
 
 sprites.player2.idle.img.src = 'img/kenji/Idle.png';
 sprites.player2.run.img.src = 'img/kenji/Run.png';
@@ -135,6 +138,7 @@ sprites.player2.fall.img.src = 'img/kenji/Fall.png';
 sprites.player2.attack1.img.src = 'img/kenji/Attack1.png';
 sprites.player2.attack2.img.src = 'img/kenji/Attack2.png';
 sprites.player2.death.img.src = 'img/kenji/Death.png';
+sprites.player2.takeHit.img.src = 'img/kenji/TakeHit.png';
 
 const animState = {
     player1: { frameCurrent: 0, framesElapsed: 0, framesHold: 5, currentSprite: sprites.player1.idle, action: 'idle' },
@@ -164,6 +168,7 @@ function updateAnim(pId, player) {
 
     let nextAction = 'idle';
     if (player.dead) nextAction = 'death';
+    else if (player.takeHit) nextAction = 'takeHit';
     else if (player.isAttacking) nextAction = player.attackType === 'kick' ? 'attack2' : 'attack1';
     else if (player.velocity.y < 0) nextAction = 'jump';
     else if (player.velocity.y > 0) nextAction = 'fall';
@@ -173,8 +178,16 @@ function updateAnim(pId, player) {
         // Don't interrupt death
         if (s.action === 'death' && s.frameCurrent === pSprites.death.framesMax - 1 && player.dead) return;
         
-        // Don't interrupt attack until it finishes, UNLESS they died
-        if ((s.action === 'attack1' || s.action === 'attack2') && nextAction !== 'death') {
+        // Don't interrupt takeHit until it finishes, UNLESS they died
+        if (s.action === 'takeHit' && nextAction !== 'death') {
+            const totalFrames = pSprites.takeHit.framesMax * s.framesHold;
+            if (s.framesElapsed < totalFrames) {
+                return; // still animating
+            }
+        }
+
+        // Don't interrupt attack until it finishes, UNLESS they died or get hit
+        if ((s.action === 'attack1' || s.action === 'attack2') && nextAction !== 'death' && nextAction !== 'takeHit') {
             // The attack has finished if frameCurrent reset to 0 AND we've elapsed enough frames to complete it.
             // framesMax * framesHold is the total duration of the animation
             const totalFrames = pSprites[s.action].framesMax * s.framesHold;
